@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout v5.0 Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-prophet {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+        
+        .btn-nesine {
+            background: linear-gradient(45deg, #ff1744, #d50000);
+        }
+        
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .match-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .teams {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .prediction {
+            background: rgba(76, 175, 80, 0.3);
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .confidence {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4caf50;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .match-details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .controls { flex-direction: column; align-items: center; }
+            .matches-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>⚽ Scout v5.0 Prophet Mode</h1>
+            <p>AI-Powered Football Prediction Intelligence</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-prophet" onclick="loadProphetMode()">
+                🔮 Prophet Mode
+            </button>
+            <button class="btn btn-nesine" onclick="loadNesineEdition()">
+                🇹🇷 Nesine Edition
+            </button>
+            <button class="btn" onclick="loadLiveMatches()">
+                ⚡ Live Matches
+            </button>
+        </div>
+        
+        <div id="content">
+            <div class="status">
+                <h3>🎯 Scout System Ready</h3>
+                <p>Select a mode to begin analysis</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadLiveMatches() {
+            fetch('/api/live-matches')
+                .then(response => response.json())
+                .then(data => {
+                    displayMatches(data.matches, 'Live Match Analysis');
+                });
+        }
+        
+        function loadProphetMode() {
+            fetch('/api/prophet-mode')
+                .then(response => response.json())
+                .then(data => {
+                    displayProphetPredictions(data.predictions);
+                });
+        }
+        
+        function loadNesineEdition() {
+            fetch('/api/nesine-edition')
+                .then(response => response.json())
+                .then(data => {
+                    displayNesineMatches(data.matches);
+                });
+        }
+        
+        function displayMatches(matches, title) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h2>${title}</h2>
+                <div class="matches-grid">
+                    ${matches.map(match => `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div class="teams">${match.home} vs ${match.away}</div>
+                                <div class="prediction">${match.prediction}</div>
+                            </div>
+                            <div class="confidence">${match.confidence}%</div>
+                            <div class="match-details">
+                                <p>⏱ ${match.minute}' | 🥅 ${match.score}</p>
+                                <p>🏆 ${match.league}</p>
+                                <p>💡 ${match.reason}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function displayProphetPredictions(predictions) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h2>🔮 Prophet Mode Predictions</h2>
+                <div class="matches-grid">
+                    ${predictions.map(pred => `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div class="teams">${pred.match}</div>
+                                <div class="prediction">${pred.prediction}</div>
+                            </div>
+                            <div class="confidence">${pred.confidence}%</div>
+                            <div class="match-details">
+                                <p>⏰ ${pred.timing}</p>
+                                <p>📈 Market Edge: ${pred.market_edge}%</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function displayNesineMatches(matches) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h2>🇹🇷 Nesine Turkish Market</h2>
+                <div class="matches-grid">
+                    ${matches.map(match => `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div class="teams">${match.home_team} vs ${match.away_team}</div>
+                                <div class="prediction">${match.league}</div>
+                            </div>
+                            <div class="match-details">
+                                <p>🏠 ${match.odds_1} | ⚖ ${match.odds_x} | 🚪 ${match.odds_2}</p>
+                                <p>⏰ ${match.match_time}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Auto-load live matches on startup
+        loadLiveMatches();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(loadLiveMatches, 60000);
+    </script>
+</body>
+</html>
